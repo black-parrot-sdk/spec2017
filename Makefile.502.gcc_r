@@ -1,0 +1,18 @@
+BENCHMARK = 502.gcc_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = t1.c
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DSPEC_502 -DSPEC_AUTO_SUPPRESS_OPENMP -DIN_GCC -DHAVE_CONFIG_H \
+		 -I$(BENCHMARK_DIR)/src/include -I$(BENCHMARK_DIR)/src/spec_qsort
+
+ARGV=gcc $(shell cat $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/control) -o out.s
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

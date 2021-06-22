@@ -1,0 +1,17 @@
+BENCHMARK = 557.xz_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = cpu2006docs.tar
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/all/input/$@.xz $@
+
+BENCHMARK_DEFS = -DSPEC $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "$$bench_flags\n"' | perl -pe 's/-I/-I$(subst /,\/,$(BENCHMARK_DIR))\/src\//g')
+
+ARGV=xz $(shell egrep -m 1 -v '^(\#|$$)' $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/control)
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 16384 # 2MB
+
+include ./Makefile.common

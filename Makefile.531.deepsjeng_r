@@ -1,0 +1,17 @@
+BENCHMARK = 531.deepsjeng_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = test.txt
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DSMALL_MEMORY -DSPEC_AUTO_SUPPRESS_OPENMP
+
+ARGV=deepsjeng $(BENCHMARK_INPS)
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

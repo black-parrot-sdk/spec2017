@@ -1,0 +1,17 @@
+BENCHMARK = 508.namd_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = apoa1.input
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/all/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DNAMD_DISABLE_SSE -DSPEC_AUTO_SUPPRESS_OPENMP
+
+ARGV=namd --input apoa1.input --iterations 1
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 81920 # 10MB
+
+include ./Makefile.common

@@ -1,0 +1,27 @@
+BENCHMARK = 525.x264_r
+
+LDECOD_SRC = $(addprefix $(BENCHMARK_DIR)/src/,$(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@{$$sources{\"ldecod_r\"}}"'))
+BENCHMARK_OBJS = $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@{$$sources{\"x264_r\"}}"')))
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = BuckBunny.264 BuckBunny.yuv
+
+%.264:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+%.yuv:
+	gcc -o ldecod $(LDECOD_SRC) $(BENCHMARK_DEFS) -lm
+	./ldecod -i $(addsuffix .264,$(basename $@)) -o $@
+	rm -rf ldecod
+
+BENCHMARK_DEFS = -DSPEC -DELIDE_CODE -DSTUBMPI -DSPEC_AUTO_SUPPRESS_OPENMP -DSPEC_AUTO_BYTEORDER=0x12345678 \
+		 -I$(BENCHMARK_DIR)/src/ldecod_src/inc -I$(BENCHMARK_DIR)/src/x264_src \
+		 -I$(BENCHMARK_DIR)/src/x264_src/extras -I$(BENCHMARK_DIR)/src/x264_src/common
+
+ARGV=x264 --dumpyuv 50 --frames 156 -o BuckBunny_New.264 BuckBunny.yuv 1280x720
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 32768 # 4MB
+
+include ./Makefile.common

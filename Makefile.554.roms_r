@@ -1,0 +1,20 @@
+BENCHMARK = 554.roms_r
+
+INPUT_TYPE = test
+INPUT_FILE = ocean_benchmark0.in.x
+BENCHMARK_INPS = stdin varinfo.dat
+
+%.dat:
+	cp $(BENCHMARK_DIR)/data/all/input/$@ $@
+
+stdin:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$(INPUT_FILE) $@
+
+BENCHMARK_DEFS = -DSPEC -DBENCHMARK -DNestedGrids=1 -DNO_GETTIMEOFDAY -DSPEC_AUTO_SUPPRESS_OPENMP -ffree-line-length-512
+
+ARGV=roms
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

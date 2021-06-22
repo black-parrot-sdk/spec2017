@@ -1,0 +1,18 @@
+BENCHMARK = 544.nab_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = hkrdenq
+
+$(BENCHMARK_INPS): %:
+	cp -r $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DNDEBUG -DNOPERFLIB -DNOREDUCE -DSPEC_AUTO_SUPPRESS_OPENMP \
+		 -I$(BENCHMARK_DIR)/src/specrand -I$(BENCHMARK_DIR)/src/regex-alpha
+
+ARGV=nab $(shell cat $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/control)
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

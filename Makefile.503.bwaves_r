@@ -1,0 +1,17 @@
+BENCHMARK = 503.bwaves_r
+
+INPUT_TYPE = test
+INPUT_FILE = bwaves_1.in
+BENCHMARK_INPS = stdin
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$(INPUT_FILE) $@
+
+BENCHMARK_DEFS = -DSPEC -DSPEC_AUTO_SUPPRESS_OPENMP
+
+ARGV=bwaves
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

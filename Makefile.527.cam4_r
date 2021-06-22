@@ -1,0 +1,23 @@
+BENCHMARK = 527.cam4_r
+
+BENCHMARK_OBJS = $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@{$$sources{\"cam4_r\"}}"')))
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = atm_in drv_in drv_flds_in
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DpgiFortran -DNO_SHR_VMATH -DCO2A -DPERGRO -DPLON=144 -DPLAT=96 -DPLEV=26 -DPCNST=3 \
+		 -DPCOLS=4 -DPTRM=1 -DPTRN=1 -DPTRK=1 -DSTAGGERED -D_NETCDF -DNO_R16 -DSPEC_AUTO_SUPPRESS_OPENMP \
+		 -I$(BENCHMARK_DIR)/src/include -I$(BENCHMARK_DIR)/src/netcdf/include
+BENCHMARK_C_DEFS = -DSPEC_AUTO_BYTEORDER=0x12345678
+BENCHMARK_F_DEFS = -DHIDE_MPI -D_MPISERIAL -DNO_MPI2 -ffree-line-length-none
+
+ARGV=cam4
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

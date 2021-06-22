@@ -1,0 +1,21 @@
+BENCHMARK = 520.omnetpp_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = omnetpp.ini ned
+
+omnetpp.ini:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+ned:
+	cp -r $(BENCHMARK_DIR)/data/all/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DSPEC_AUTO_SUPPRESS_OPENMP -DWITH_NETBUILDER -D__FreeBSD__ -I$(BENCHMARK_DIR)/src/model \
+		 -I$(BENCHMARK_DIR)/src/simulator -I$(BENCHMARK_DIR)/src/simulator/platdep
+
+ARGV=omnetpp -c General -r 0
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

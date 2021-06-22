@@ -1,0 +1,17 @@
+BENCHMARK = 548.exchange2_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = puzzles.txt
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/all/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DSPEC_AUTO_SUPPRESS_OPENMP
+
+ARGV=exchange2 $(shell cat $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/control)
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

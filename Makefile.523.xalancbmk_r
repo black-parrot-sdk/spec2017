@@ -1,0 +1,22 @@
+BENCHMARK = 523.xalancbmk_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = test.xml xalanc.xsl 100mb.xsd
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DAPP_NO_THREADS -DXALAN_INMEM_MSG_LOADER -DPROJ_XMLPARSER -DPROJ_XMLUTIL \
+		 -DPROJ_PARSERS -DPROJ_SAX4C -DPROJ_SAX2 -DPROJ_DOM -DPROJ_VALIDATORS \
+		 -DXML_USE_INMEM_MESSAGELOADER -DSPEC_AUTO_SUPPRESS_OPENMP -D__FreeBSD__ \
+		 -I$(BENCHMARK_DIR)/src/xercesc -I$(BENCHMARK_DIR)/src/xercesc/dom -I$(BENCHMARK_DIR)/src/xercesc/dom/impl \
+		 -I$(BENCHMARK_DIR)/src/xercesc/sax -I$(BENCHMARK_DIR)/src/xercesc/util/MsgLoaders/InMemory \
+		 -I$(BENCHMARK_DIR)/src/xercesc/util/Transcoders/Iconv -I$(BENCHMARK_DIR)/src/include
+
+ARGV=xalancbmk -v test.xml xalanc.xsl
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

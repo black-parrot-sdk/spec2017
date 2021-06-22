@@ -1,0 +1,20 @@
+BENCHMARK = 511.povray_r
+
+BENCHMARK_OBJS = $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@{$$sources{\"povray_r\"}}"')))
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = SPEC-benchmark-test.ini SPEC-benchmark-test.pov
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DSPEC_AUTO_SUPPRESS_OPENMP -I$(BENCHMARK_DIR)/src/frontend \
+		 -I$(BENCHMARK_DIR)/src/base -I$(BENCHMARK_DIR)/src/spec_qsort
+
+ARGV=povray SPEC-benchmark-test.ini
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

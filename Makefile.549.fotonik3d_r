@@ -1,0 +1,20 @@
+BENCHMARK = 549.fotonik3d_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = yee.dat power1.dat power2.dat trans_W3PC.def incident_W3PC.def PSI.dat TEwaveguide.m
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+OBJ.dat:
+	7z x $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@.xz
+
+BENCHMARK_DEFS = -DSPEC -DSPEC_AUTO_SUPPRESS_OPENMP
+
+ARGV=fotonik3d
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

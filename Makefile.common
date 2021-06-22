@@ -1,0 +1,61 @@
+TOP          ?= $(shell git rev-parse --show-toplevel)
+BP_SDK_DIR   ?= $(TOP)/..
+BENCHMARK_DIR = $(BP_SDK_DIR)/spec2017/spec2017/benchspec/CPU/$(BENCHMARK)
+PM_FILE       = $(BENCHMARK_DIR)/Spec/object.pm
+MKLFS         = dramfs_mklfs
+
+comma:= ,
+empty:=
+space:= $(empty) $(empty)
+
+VPATH = $(subst $(space),:,$(shell find $(BENCHMARK_DIR)/src -type d))
+vpath %.c ./initlib
+
+RISCV_GCC       = $(CROSS_COMPILE)gcc
+RISCV_GCC_OPTS  = -O2 -mabi=lp64 -march=rv64imafd -mcmodel=medany -mstrict-align -I$(BP_INCLUDE_DIR) -I$(BENCHMARK_DIR)/src
+RISCV_GCC_OPTS += $(BENCHMARK_DEFS)
+RISCV_GCC_OPTS += -D__init_argc=$(words $(ARGV)) -D__init_argv=\"$(subst $(space),\"$(comma)\",$(strip $(ARGV)))\"
+RISCV_LINK_OPTS = -T $(BP_LINKER_DIR)/riscv.ld -L$(BP_LIB_DIR) -static -lstdc++ -lgfortran -lm -Wl,--whole-archive -lperch -Wl,--no-whole-archive
+
+BENCHMARK_OBJS ?= $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@sources\n"')))
+OBJECT_FILES    = work/lfs.o work/extra_init.o $(addprefix work/,$(BENCHMARK_OBJS))
+
+C_SRC_EXT = S c C cc cpp
+F_SRC_EXT = f F f90 F90
+
+define c_compile_rule
+.SECONDEXPANSION:
+work/%.o: %.$1 | $$$$(@D)/
+	$$(RISCV_GCC) -o $$@ -c $$< $$(RISCV_GCC_OPTS) $$(BENCHMARK_C_DEFS)
+endef
+
+define f_compile_rule
+.SECONDEXPANSION:
+work/%.o: %.$1 | $$$$(@D)/
+	perl -I$(dir $(PM_FILE)) -Mobject -e \
+	'print "@{$$$$deps{\"$$(subst $$(BENCHMARK_DIR)/src/,,$$<)\"}}\n"' \
+	| perl -pe 's/(^|\s)(?=\w)/ work\//g; s/\.[^.]+(?=$$$$|\s)/.o/g' \
+	| xargs -r $(MAKE) -f Makefile.$(BENCHMARK)
+	$$(eval INCPATH = $$(addprefix -I,$$(shell find $(BP_SDK_DIR)/spec2017/work -type d)))
+	$$(RISCV_GCC) -o $$@ -J$$(@D) -c $$< $$(RISCV_GCC_OPTS) $$(BENCHMARK_F_DEFS) $$(INCPATH)
+endef
+
+$(BENCHMARK).riscv: $(OBJECT_FILES)
+	$(RISCV_GCC) -o $@ $^ $(RISCV_LINK_OPTS)
+
+$(foreach EXT,$(C_SRC_EXT),$(eval $(call c_compile_rule,$(EXT))))
+$(foreach EXT,$(F_SRC_EXT),$(eval $(call f_compile_rule,$(EXT))))
+
+lfs.c: $(BENCHMARK_INPS)
+	$(MKLFS) $(LFS_BLOCK_SIZE) $(LFS_BLOCK_COUNT) $(BENCHMARK_INPS) > $@
+
+.PRECIOUS: work/ work%/
+
+work/:
+	mkdir -p $@
+
+work%/:
+	mkdir -p $@
+
+clean:
+	rm -rf work lfs.c $(BENCHMARK_INPS)

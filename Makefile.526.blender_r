@@ -1,0 +1,19 @@
+BENCHMARK = 526.blender_r
+
+BENCHMARK_OBJS = $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@{$$sources{\"blender_r\"}}"')))
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = cube.blend
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "$$bench_flags\n"' | perl -pe 's/-I/-I$(subst /,\/,$(BENCHMARK_DIR))\/src\//g')
+
+ARGV=blender $(BENCHMARK_INPS) --render-output out_ --threads 1 -b $(shell cat $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/control)
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 8192 # 1MB
+
+include ./Makefile.common

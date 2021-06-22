@@ -1,0 +1,17 @@
+BENCHMARK = 519.lbm_r
+
+INPUT_TYPE = test
+
+BENCHMARK_INPS = 100_100_130_cf_a.of
+
+$(BENCHMARK_INPS): %:
+	cp $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/$@ $@
+
+BENCHMARK_DEFS = -DSPEC -DSPEC_AUTO_SUPPRESS_OPENMP
+
+ARGV=lbm $(shell cat $(BENCHMARK_DIR)/data/$(INPUT_TYPE)/input/lbm.in)
+
+LFS_BLOCK_SIZE = 128
+LFS_BLOCK_COUNT = 16384 # 2MB
+
+include ./Makefile.common
