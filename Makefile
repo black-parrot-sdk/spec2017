@@ -6,7 +6,7 @@ all:
 	$(MAKE) $(RUNS)
 
 spec2017:
-	-git clone git@github.com:black-parrot-sdk/spec2017-private spec2017
+	git clone git@github.com:black-parrot-sdk/spec2017-private spec2017
 
 %.riscv: spec2017
 	$(MAKE) -f Makefile.$* $@
