@@ -11,14 +11,31 @@ space:= $(empty) $(empty)
 VPATH = $(subst $(space),:,$(shell find $(BENCHMARK_DIR)/src -type d))
 vpath %.c ./initlib
 
-RISCV_GCC       = $(CROSS_COMPILE)gcc
+BENCHMARK_OBJS ?= $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@sources\n"')))
+
+ifdef PK
+COMPILE         = riscv64-unknown-elf-
+OBJECT_FILES    = work/extra_init.o $(addprefix work/,$(BENCHMARK_OBJS))
+ifdef SYSTRACE
+PERCH           = perchpks
+else
+PERCH           = perchpk
+endif
+else
+COMPILE         = riscv64-unknown-elf-dramfs-
+OBJECT_FILES    = work/lfs.o work/extra_init.o $(addprefix work/,$(BENCHMARK_OBJS))
+ifdef SYSTRACE
+PERCH           = perchs
+else
+PERCH           = perch
+endif
+endif
+
+RISCV_GCC       = $(COMPILE)gcc
 RISCV_GCC_OPTS  = -O2 -mabi=lp64 -march=rv64imafd -mcmodel=medany -mstrict-align -I$(BP_SDK_INCLUDE_DIR) -I$(BENCHMARK_DIR)/src
 RISCV_GCC_OPTS += $(BENCHMARK_DEFS)
 RISCV_GCC_OPTS += -D__init_argc=$(words $(ARGV)) -D__init_argv=\"$(subst $(space),\"$(comma)\",$(strip $(ARGV)))\"
-RISCV_LINK_OPTS = -T $(BP_SDK_LINKER_DIR)/riscv.ld -L$(BP_SDK_LIB_DIR) -static -lstdc++ -lgfortran -lm -Wl,--whole-archive -lperch -Wl,--no-whole-archive
-
-BENCHMARK_OBJS ?= $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@sources\n"')))
-OBJECT_FILES    = work/lfs.o work/extra_init.o $(addprefix work/,$(BENCHMARK_OBJS))
+RISCV_LINK_OPTS = -T $(BP_SDK_LINKER_DIR)/riscv.ld -L$(BP_SDK_LIB_DIR) -static -lstdc++ -lgfortran -lm -Wl,--whole-archive -l$(PERCH) -Wl,--no-whole-archive
 
 C_SRC_EXT = S c C cc cpp
 F_SRC_EXT = f F f90 F90
@@ -45,6 +62,10 @@ $(BENCHMARK).riscv: $(OBJECT_FILES)
 
 $(foreach EXT,$(C_SRC_EXT),$(eval $(call c_compile_rule,$(EXT))))
 $(foreach EXT,$(F_SRC_EXT),$(eval $(call f_compile_rule,$(EXT))))
+
+inputs/$(BENCHMARK): $(BENCHMARK_INPS)
+	mkdir -p $@
+	$(foreach INP,$(BENCHMARK_INPS),cp -rf $(INP) $@/.; )
 
 lfs.c: $(BENCHMARK_INPS)
 	$(MKLFS) $(LFS_BLOCK_SIZE) $(LFS_BLOCK_COUNT) $(BENCHMARK_INPS) > $@
