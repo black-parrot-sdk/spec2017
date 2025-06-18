@@ -16,7 +16,7 @@ RISCV_GCC_OPTS  = -O2 -mabi=lp64d -march=rv64gc -mcmodel=medany -mstrict-align -
 RISCV_GCC_OPTS += -std=gnu++11
 RISCV_GCC_OPTS += $(BENCHMARK_DEFS)
 RISCV_GCC_OPTS += -D__init_argc=$(words $(ARGV)) -D__init_argv=\"$(subst $(space),\"$(comma)\",$(strip $(ARGV)))\"
-RISCV_LINK_OPTS = -T $(BP_SDK_LINKER_DIR)/riscv.ld -L$(BP_SDK_LIB_DIR) -static -lstdc++ -lgfortran -lm -Wl,--whole-archive -lperch -Wl,--no-whole-archive
+RISCV_LINK_OPTS = -static -lstdc++ -fno-use-cxa-atexit -Wabi-tag -D_GLIBCXX_USE_CXX11_ABI=0 -lgfortran -lm --specs=perch.specs --specs=dramfs.specs
 
 BENCHMARK_OBJS ?= $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@sources\n"')))
 OBJECT_FILES    = work/lfs.o work/extra_init.o $(addprefix work/,$(BENCHMARK_OBJS))
