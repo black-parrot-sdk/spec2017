@@ -1,7 +1,6 @@
 BENCHMARKS = \
   507.cactuBSSN_r \
   508.namd_r      \
-  510.parest_r    \
   531.deepsjeng_r \
   541.leela_r     \
   544.nab_r       \
@@ -22,4 +21,5 @@ NOT_WORKING = \
   526.blender_r \
   527.cam4_r \
   538.imagick_r \
+  510.parest_r    \
   554.roms_r

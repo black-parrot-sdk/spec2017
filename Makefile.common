@@ -1,6 +1,4 @@
-TOP          ?= $(shell git rev-parse --show-toplevel)
-BP_SDK_DIR   ?= $(TOP)/..
-BENCHMARK_DIR = $(BP_SDK_DIR)/spec2017/spec2017/benchspec/CPU/$(BENCHMARK)
+BENCHMARK_DIR = $(CURDIR)/spec2017/benchspec/CPU/$(BENCHMARK)
 PM_FILE       = $(BENCHMARK_DIR)/Spec/object.pm
 MKLFS         = dramfs_mklfs
 
@@ -11,12 +9,12 @@ space:= $(empty) $(empty)
 VPATH = $(subst $(space),:,$(shell find $(BENCHMARK_DIR)/src -type d))
 vpath %.c ./initlib
 
-RISCV_GCC       = $(CROSS_COMPILE)gcc
-RISCV_GCC_OPTS  = -O2 -mabi=lp64d -march=rv64gc -mcmodel=medany -mstrict-align -I$(BP_SDK_INCLUDE_DIR) -I$(BENCHMARK_DIR)/src
-RISCV_GCC_OPTS += -std=gnu++11
+RISCV_GCC       = $(CROSS_COMPILE)gcc -std=gnu17
+RISCV_GCC_OPTS  = -O2 -mabi=lp64d -march=rv64gc -mcmodel=medany -mstrict-align -I$(BENCHMARK_DIR)/src
+RISCV_GCC_OPTS += -Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-mismatch -Wno-int-conversion
 RISCV_GCC_OPTS += $(BENCHMARK_DEFS)
 RISCV_GCC_OPTS += -D__init_argc=$(words $(ARGV)) -D__init_argv=\"$(subst $(space),\"$(comma)\",$(strip $(ARGV)))\"
-RISCV_LINK_OPTS = -static -lstdc++ -fno-use-cxa-atexit -Wabi-tag -D_GLIBCXX_USE_CXX11_ABI=0 -lgfortran -lm --specs=perch.specs --specs=dramfs.specs
+RISCV_LINK_OPTS = -static -lstdc++ -fno-use-cxa-atexit -Wabi-tag -D_GLIBCXX_USE_CXX11_ABI=0 -lgfortran -lm --specs=dramfs.specs --specs=perch.specs
 
 BENCHMARK_OBJS ?= $(addsuffix .o,$(basename $(shell perl -I$(dir $(PM_FILE)) -Mobject -e 'print "@sources\n"')))
 OBJECT_FILES    = work/lfs.o work/extra_init.o $(addprefix work/,$(BENCHMARK_OBJS))
@@ -37,7 +35,7 @@ work/%.o: %.$1 | $$$$(@D)/
 	'print "@{$$$$deps{\"$$(subst $$(BENCHMARK_DIR)/src/,,$$<)\"}}\n"' \
 	| perl -pe 's/(^|\s)(?=\w)/ work\//g; s/\.[^.]+(?=$$$$|\s)/.o/g' \
 	| xargs -r $(MAKE) -f Makefile.$(BENCHMARK)
-	$$(eval INCPATH = $$(addprefix -I,$$(shell find $(BP_SDK_DIR)/spec2017/work -type d)))
+	$$(eval INCPATH = $$(addprefix -I,$$(shell find $(CURDIR)/work -type d)))
 	$$(RISCV_GCC) -o $$@ -J$$(@D) -c $$< $$(RISCV_GCC_OPTS) $$(BENCHMARK_F_DEFS) $$(INCPATH)
 endef
 
