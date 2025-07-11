@@ -1,6 +1,6 @@
 BENCHMARK_DIR = $(CURDIR)/spec2017/benchspec/CPU/$(BENCHMARK)
 PM_FILE       = $(BENCHMARK_DIR)/Spec/object.pm
-MKLFS         = dramfs_mklfs
+MKLFS         = riscv64-unknown-elf-dramfs_mklfs
 
 comma:= ,
 empty:=
